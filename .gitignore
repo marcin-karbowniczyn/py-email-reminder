@@ -8,6 +8,7 @@ __pycache__/
 
 # Custom
 .idea
+/venv
 
 # Distribution / packaging
 .Python
