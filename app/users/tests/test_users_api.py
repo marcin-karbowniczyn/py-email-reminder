@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-CREATE_USER_URL = reverse('users:create')
+CREATE_USER_URL = reverse('users:signup')
 
 
 def create_user(**params):
