@@ -9,6 +9,7 @@ __pycache__/
 # Custom
 .idea
 /venv
+mytest.py
 
 # Distribution / packaging
 .Python
