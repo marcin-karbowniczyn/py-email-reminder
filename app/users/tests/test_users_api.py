@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse('users:signup')
+TOKEN_URL = reverse('users:token')
 
 
 def create_user(**params):
@@ -25,7 +26,7 @@ class PublicUsersAPITests(TestCase):
         payload = {
             'email': 'testuser@example.com',
             'password': 'Test1234',
-            'name': 'Test Name'  # Sprawdzić czy działa bez name
+            'name': 'Test Name'
         }
 
         res = self.client.post(CREATE_USER_URL, payload)
@@ -66,6 +67,34 @@ class PublicUsersAPITests(TestCase):
             self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
             user_exists = get_user_model().objects.filter(email=payload['email']).exists()
             self.assertFalse(user_exists)
+
+    def test_create_token_for_user(self):
+        """ Test generating token for valid credentials """
+        user_details = {
+            'email': 'test@example.com',
+            'password': 'Test1234'
+        }
+        create_user(**user_details)
+
+        res = self.client.post(TOKEN_URL, {'email': user_details['email'], 'password': user_details['password']})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('token', res.data)
+
+    def test_create_token_bad_credentials(self):
+        """ Test API returns error if credential are invalid """
+        create_user(email='test@example.com', password='Test1234')
+
+        res = self.client.post(TOKEN_URL, {'email': 'different@example.com', 'password': 'Badpass1'})
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn('token', res.data)
+
+    def test_create_token_blank_password(self):
+        """ Test posting a blank password returns an error """
+        payload = {'email': 'test@example.com', 'password': ''}
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn('token', res.data)
 
 # class PrivateUsersAPITests(TestCase):
 #     pass
