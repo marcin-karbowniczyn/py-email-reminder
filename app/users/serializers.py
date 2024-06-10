@@ -27,6 +27,18 @@ class UserSerializer(serializers.ModelSerializer):
         """ Create and return a user with encrypted password """
         return get_user_model().objects.create_user(**validated_data)
 
+    # Overwrite update method to handle hashing password. Use parent's update method for other fields.
+    def update(self, instance, validated_data):
+        """ Update and return user """
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+
+        if password is not None:
+            user.set_password(password)
+            user.save()
+
+        return user
+
 
 # Custom Auth Token Serializer for using email instead of default username
 class AuthTokenSerializer(serializers.Serializer):
