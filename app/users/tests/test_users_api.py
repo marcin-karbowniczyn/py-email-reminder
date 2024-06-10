@@ -8,6 +8,7 @@ from rest_framework import status
 
 CREATE_USER_URL = reverse('users:create')
 TOKEN_URL = reverse('users:token')
+ME_URL = reverse('users:me')
 
 
 def create_user(**params):
@@ -96,5 +97,40 @@ class PublicUsersAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('token', res.data)
 
-# class PrivateUsersAPITests(TestCase):
-#     pass
+    def test_retrieve_user_unauthorized(self):
+        """ Test authentication is required for users """
+        res = self.client.get(ME_URL)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PrivateUsersAPITests(TestCase):
+    """ Test API requests that require authentication """
+
+    def setUp(self):
+        # Sprawdzić czy działa bez hasła w sumie, skoro password=None
+        self.user = create_user(email='test@example.com', password='Test1234', name='Test Name')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_retrieve_profile_success(self):
+        """ Test retrieving profile for logged in user """
+        res = self.client.get(ME_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data['name'], self.user.name)
+        self.assertEqual(res.data['email'], self.user.email)
+
+    def test_post_me_not_allowed(self):
+        """ POST requests are not allowed to ME endpoint """
+        res = self.client.post(ME_URL, {})
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_update_user(self):
+        """ Test updating the user profile for the authenticated user """
+        payload = {'name': 'New Test Name', 'password': 'NewPass1234'}
+        res = self.client.patch(ME_URL, payload)
+        self.user.refresh_from_db()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(payload['name'], self.user.name)
+        self.assertTrue(self.user.check_password(payload['password']))
