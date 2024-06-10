@@ -15,7 +15,7 @@ class NumericInPasswordCustomValidator:
             )
 
     def get_help_text(self):
-        return f'Your password must contain at least %(min_digits)d digits.' % {'min_digits': self.min_digits}
+        return 'Your password must contain at least %(min_digits)d digits.' % {'min_digits': self.min_digits}
 
 
 class AtLeastOneCapitalLetterCustomValidator:
@@ -28,4 +28,4 @@ class AtLeastOneCapitalLetterCustomValidator:
             )
 
     def get_help_text(self):
-        return f'Your password must contain at least 1 digits.'
+        return 'Your password must contain at least 1 uppercase letter.'
