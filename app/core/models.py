@@ -1,6 +1,4 @@
 """ Database models """
-from datetime import date
-
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -60,7 +58,8 @@ class Remainder(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    remainder_date = models.DateField(validators=[validate_remainder_date])  # I set this here for the django admin to be able to also call it, not only the serializer
+    # I set the validation here for the django admin to be able to also call it, not only the serializer
+    remainder_date = models.DateField(validators=[validate_remainder_date])
     permanent = models.BooleanField(default=False)
     sent_check = models.CharField(max_length=255, choices=SENT_CHECKS, default='None')
     created_at = models.DateField(auto_now_add=True)
