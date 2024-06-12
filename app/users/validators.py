@@ -1,3 +1,4 @@
+""" User password validators"""
 import re
 from django.core.exceptions import ValidationError
 
