@@ -2,42 +2,79 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 from rest_framework import serializers
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """ Serializer for the user object """
-
-    class Meta:
-        model = get_user_model()
-        fields = ['email', 'password', 'name']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def validate_password(self, value):
-        """ Apply custom password validators """
+def validate_passwords(password, password_confirm):
+    """ Validate passwords are the same, and password meets requirements """
+    if password == password_confirm:
         try:
-            password_validation.validate_password(value)
+            password_validation.validate_password(password)
         except ValidationError as err:
             raise serializers.ValidationError(str(err))
+    else:
+        raise serializers.ValidationError("Passwords don't match.")
 
-        return value
+
+class RegisterNewUserSerializer(serializers.Serializer):
+    """ Serializer for registering the new user """
+    email = serializers.EmailField(max_length=255, required=True)
+    name = serializers.CharField(max_length=255, required=True)
+    password = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
+    password_confirm = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
+
+    def validate(self, data):
+        # Check if email exists (Django automatically responds with IntegrityError)
+        # user = get_user_model().objects.filter(email=data['email'])
+        # if user:
+        #     raise IntegrityError({'email_error': 'User with this email already exists.'})
+
+        # Validate passwords
+        password = data.get('password')
+        password_confirm = data.pop('password_confirm', '')
+        validate_passwords(password, password_confirm)
+
+        return data
 
     def create(self, validated_data):
         """ Create and return a user with encrypted password """
         return get_user_model().objects.create_user(**validated_data)
 
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """ Serializer for changing authenticated user's password """
+    password = serializers.CharField(max_length=128, required=True, trim_whitespace=False)
+    password_confirm = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
+
+    def validate(self, data):
+        """ Validate if passwords are the same and if new password meet requirements """
+        # 1. Get password from request data and remove password_confirm from the request
+        password = data.get('password')
+        password_confirm = data.pop('password_confirm', '')
+
+        # 2. Validate passwords
+        validate_passwords(password, password_confirm)
+
+        # 3. Return data
+        return data
+
     # Overwrite update method to handle hashing password. Use parent's update method for other fields.
     def update(self, instance, validated_data):
         """ Update and return user """
-        password = validated_data.pop('password', None)
-        user = super().update(instance, validated_data)
+        instance.set_password(validated_data['password'])
+        instance.save()
 
-        if password is not None:
-            user.set_password(password)
-            user.save()
+        return instance
 
-        return user
+
+class ManageUserSerializer(serializers.ModelSerializer):
+    """ Serializer for changing safe User fields, don't use it for passwords """
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'name']
 
 
 # Custom Auth Token Serializer for using email instead of default username
