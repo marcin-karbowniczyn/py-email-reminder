@@ -6,9 +6,10 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-CREATE_USER_URL = reverse('users:create')
+CREATE_USER_URL = reverse('users:register')
 TOKEN_URL = reverse('users:token')
 ME_URL = reverse('users:me')
+CHANGE_PASSWORD_URL = reverse('users:changepassword')
 
 
 def create_user(**params):
@@ -27,6 +28,7 @@ class PublicUsersAPITests(TestCase):
         payload = {
             'email': 'testuser@example.com',
             'password': 'Test1234',
+            'password_confirm': 'Test1234',
             'name': 'Test Name'
         }
 
@@ -36,6 +38,7 @@ class PublicUsersAPITests(TestCase):
         user = get_user_model().objects.get(email=payload['email'])
         self.assertTrue(user.check_password(payload['password']))
         self.assertNotIn('password', res.data)
+        self.assertNotIn('password_confirm', res.data)
 
     def test_user_with_email_exists_error(self):
         """ Test an error returned if user with email exists """
@@ -126,13 +129,26 @@ class PrivateUsersAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_update_user(self):
-        """ Test updating the user profile for the authenticated user """
-        payload = {'name': 'New Test Name', 'password': 'NewPass1234'}
+        """ Test updating safe fields in user profile for the authenticated user """
+        payload = {'name': 'New Test Name'}
         res = self.client.patch(ME_URL, payload)
         self.user.refresh_from_db()
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(payload['name'], self.user.name)
+        self.assertNotIn('password', res.data)
+
+    def test_change_password(self):
+        """ Test changing passwords works """
+        newpass = 'NewPassTest12345'
+        payload = {
+            'password': newpass,
+            'password_confirm': newpass
+        }
+        res = self.client.patch(CHANGE_PASSWORD_URL, payload)
+        self.user.refresh_from_db()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertTrue(self.user.check_password(payload['password']))
 
     def test_delete_user(self):
