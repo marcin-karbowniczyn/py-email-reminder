@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
+# from django.db.utils import IntegrityError
 
 from rest_framework import serializers
 
