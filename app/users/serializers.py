@@ -72,7 +72,7 @@ class AuthTokenSerializer(serializers.Serializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     """ Serializer for changing authenticated user's password """
-    password = serializers.CharField(max_length=128, required=True, trim_whitespace=False)
+    password = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
     password_confirm = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
 
     def validate(self, data):

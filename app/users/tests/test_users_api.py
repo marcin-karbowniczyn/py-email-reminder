@@ -151,7 +151,7 @@ class PrivateUsersAPITests(TestCase):
         self.assertNotIn('password', res.data)
 
     def test_change_password(self):
-        """ Test changing passwords works """
+        """ Test changing passwords works and no password in response """
         newpass = 'NewPassTest12345'
         payload = {
             'password': newpass,
@@ -162,6 +162,7 @@ class PrivateUsersAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertTrue(self.user.check_password(payload['password']))
+        self.assertNotIn('password', res.data)
 
     def test_delete_me(self):
         """ Test deleting the user for the authenticated user """
