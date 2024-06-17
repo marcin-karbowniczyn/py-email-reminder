@@ -18,6 +18,31 @@ def validate_passwords(password, password_confirm):
         raise serializers.ValidationError("Passwords don't match.")
 
 
+class RegisterNewUserSerializer(serializers.Serializer):
+    """ Serializer for registering the new user """
+    email = serializers.EmailField(max_length=255, required=True)
+    name = serializers.CharField(max_length=255, required=True)
+    password = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
+    password_confirm = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
+
+    def validate(self, data):
+        # Check if email exists (Django automatically responds with IntegrityError)
+        # user = get_user_model().objects.filter(email=data['email'])
+        # if user:
+        #     raise IntegrityError({'email_error': 'User with this email already exists.'})
+
+        # Validate passwords
+        password = data.get('password')
+        password_confirm = data.pop('password_confirm', '')
+        validate_passwords(password, password_confirm)
+
+        return data
+
+    def create(self, validated_data):
+        """ Create and return a user with encrypted password """
+        return get_user_model().objects.create_user(**validated_data)
+
+
 # Custom Auth Token Serializer for using email instead of default username
 class AuthTokenSerializer(serializers.Serializer):
     """ Serializer for the user auth token """
@@ -43,31 +68,6 @@ class AuthTokenSerializer(serializers.Serializer):
 
         data['user'] = user
         return data
-
-
-class RegisterNewUserSerializer(serializers.Serializer):
-    """ Serializer for registering the new user """
-    email = serializers.EmailField(max_length=255, required=True)
-    name = serializers.CharField(max_length=255, required=True)
-    password = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
-    password_confirm = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
-
-    def validate(self, data):
-        # Check if email exists (Django automatically responds with IntegrityError)
-        # user = get_user_model().objects.filter(email=data['email'])
-        # if user:
-        #     raise IntegrityError({'email_error': 'User with this email already exists.'})
-
-        # Validate passwords
-        password = data.get('password')
-        password_confirm = data.pop('password_confirm', '')
-        validate_passwords(password, password_confirm)
-
-        return data
-
-    def create(self, validated_data):
-        """ Create and return a user with encrypted password """
-        return get_user_model().objects.create_user(**validated_data)
 
 
 class ChangePasswordSerializer(serializers.Serializer):

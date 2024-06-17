@@ -10,7 +10,7 @@ from rest_framework import status
 CREATE_USER_URL = reverse('users:register')
 TOKEN_URL = reverse('users:token')
 ME_URL = reverse('users:me')
-CHANGE_PASSWORD_URL = reverse('users:changepassword')
+CHANGE_PASSWORD_URL = reverse('users:change_password')
 DELETE_ME_URL = reverse('users:delete_me')
 
 
@@ -133,6 +133,11 @@ class PrivateUsersAPITests(TestCase):
     def test_post_me_not_allowed(self):
         """ POST requests are not allowed to ME endpoint """
         res = self.client.post(ME_URL, {})
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_delete_me_not_allowed(self):
+        """ POST requests are not allowed to ME endpoint """
+        res = self.client.delete(ME_URL, {})
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_update_user(self):
