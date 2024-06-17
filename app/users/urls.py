@@ -9,6 +9,6 @@ urlpatterns = [
     path('register/', views.RegisterNewUserView.as_view(), name='register'),
     path('token/', views.CreateAuthTokenView.as_view(), name='token'),
     path('me/', views.ManageUserView.as_view(), name='me'),
-    path('changepassword/', views.ChangeUserPasswordView.as_view(), name='changepassword'),
-    path('deleteMe/', views.DeleteMeView.as_view(), name='delete_me'),
+    path('me/delete/', views.DeleteMeView.as_view(), name='delete_me'),
+    path('me/changepassword/', views.ChangeUserPasswordView.as_view(), name='change_password'),
 ]
