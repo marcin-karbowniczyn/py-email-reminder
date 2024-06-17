@@ -10,4 +10,5 @@ urlpatterns = [
     path('token/', views.CreateAuthTokenView.as_view(), name='token'),
     path('me/', views.ManageUserView.as_view(), name='me'),
     path('changepassword/', views.ChangeUserPasswordView.as_view(), name='changepassword'),
+    path('deleteMe/', views.DeleteMeView.as_view(), name='delete_me'),
 ]

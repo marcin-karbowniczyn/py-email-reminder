@@ -77,6 +77,19 @@ class ManageUserSerializer(serializers.ModelSerializer):
         fields = ['email', 'name']
 
 
+class DeleteMeSerializer(serializers.Serializer):
+    """ Serializer for deleting authenticated user """
+    password = serializers.CharField(max_length=128, required=True, trim_whitespace=False)
+
+    def validate_password(self, value):
+        """ Check if user's password is correct """
+        user = self.context['request'].user
+        if user.check_password(value) is False:
+            raise ValidationError('Incorrect password. Please try again.')
+
+        return value
+
+
 # Custom Auth Token Serializer for using email instead of default username
 class AuthTokenSerializer(serializers.Serializer):
     """ Serializer for the user auth token """

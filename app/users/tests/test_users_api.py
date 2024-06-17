@@ -1,6 +1,7 @@
 """ Tests for the users API """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 
 from rest_framework.test import APIClient
@@ -10,6 +11,7 @@ CREATE_USER_URL = reverse('users:register')
 TOKEN_URL = reverse('users:token')
 ME_URL = reverse('users:me')
 CHANGE_PASSWORD_URL = reverse('users:changepassword')
+DELETE_ME_URL = reverse('users:delete_me')
 
 
 def create_user(**params):
@@ -105,6 +107,11 @@ class PublicUsersAPITests(TestCase):
         res = self.client.get(ME_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_delete_user_unauthorized(self):
+        """ Test deleting the user is allowed only to authenticated users """
+        res = self.client.delete(DELETE_ME_URL)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class PrivateUsersAPITests(TestCase):
     """ Test API requests that require authentication """
@@ -151,9 +158,28 @@ class PrivateUsersAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertTrue(self.user.check_password(payload['password']))
 
-    def test_delete_user(self):
+    def test_delete_me(self):
         """ Test deleting the user for the authenticated user """
-        res = self.client.delete(ME_URL)
+        new_user = create_user(email='new_test_user@example.com', password='Password1234')
+        self.client.force_authenticate(user=new_user)
+        res = self.client.delete(DELETE_ME_URL, data={'password': 'Password1234'})
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(get_user_model().objects.count(), 0)
+        with self.assertRaises(ObjectDoesNotExist):
+            get_user_model().objects.get(id=new_user.id)
+
+    def test_delete_me_requires_password(self):
+        """ Test deleting an authenticated user requires password is provided """
+        res = self.client.delete(DELETE_ME_URL, data={'password': ''})
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(get_user_model().objects.count(), 1)
+
+    def test_delete_me_wrong_password(self):
+        """ Test providing wrong password raises an error """
+        new_user = create_user(email='new_test_user@example.com', password='GoodPassword1234')
+        self.client.force_authenticate(user=new_user)
+        res = self.client.delete(DELETE_ME_URL, data={'password': 'WrongPassword1234'})
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(get_user_model().objects.filter(id=new_user.id).exists())
