@@ -18,6 +18,33 @@ def validate_passwords(password, password_confirm):
         raise serializers.ValidationError("Passwords don't match.")
 
 
+# Custom Auth Token Serializer for using email instead of default username
+class AuthTokenSerializer(serializers.Serializer):
+    """ Serializer for the user auth token """
+    email = serializers.EmailField()
+    password = serializers.CharField(
+        style={'input_type': 'password'},
+        trim_whitespace=False,
+    )
+
+    def validate(self, data):
+        """ Validate and authenticate the user """
+        email = data.get('email')
+        password = data.get('password')
+        user = authenticate(
+            self.context.get('request'),
+            username=email,
+            password=password
+        )
+
+        if not user:
+            msg = 'Unable to authenticate with provided credentials.'
+            raise serializers.ValidationError(msg, code='authorization')
+
+        data['user'] = user
+        return data
+
+
 class RegisterNewUserSerializer(serializers.Serializer):
     """ Serializer for registering the new user """
     email = serializers.EmailField(max_length=255, required=True)
@@ -88,30 +115,3 @@ class DeleteMeSerializer(serializers.Serializer):
             raise ValidationError('Incorrect password. Please try again.')
 
         return value
-
-
-# Custom Auth Token Serializer for using email instead of default username
-class AuthTokenSerializer(serializers.Serializer):
-    """ Serializer for the user auth token """
-    email = serializers.EmailField()
-    password = serializers.CharField(
-        style={'input_type': 'password'},
-        trim_whitespace=False,
-    )
-
-    def validate(self, data):
-        """ Validate and authenticate the user """
-        email = data.get('email')
-        password = data.get('password')
-        user = authenticate(
-            self.context.get('request'),
-            username=email,
-            password=password
-        )
-
-        if not user:
-            msg = 'Unable to authenticate with provided credentials.'
-            raise serializers.ValidationError(msg, code='authorization')
-
-        data['user'] = user
-        return data
