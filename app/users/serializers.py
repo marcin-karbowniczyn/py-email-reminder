@@ -2,7 +2,6 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-# from django.db.utils import IntegrityError
 
 from rest_framework import serializers
 
@@ -26,10 +25,11 @@ class RegisterNewUserSerializer(serializers.Serializer):
     password_confirm = serializers.CharField(max_length=128, required=True, write_only=True, trim_whitespace=False)
 
     def validate(self, data):
-        # Check if email exists (Django automatically responds with IntegrityError)
-        # user = get_user_model().objects.filter(email=data['email'])
-        # if user:
-        #     raise IntegrityError({'email_error': 'User with this email already exists.'})
+        # Check if email exists (Django automatically responds with IntegrityError, but I wanted to override this)
+        # I wanted to send clear error msg to the user
+        user = get_user_model().objects.filter(email=data['email'])
+        if user:
+            raise ValidationError({'email_error': 'User with this email already exists.'})
 
         # Validate passwords
         password = data.get('password')
