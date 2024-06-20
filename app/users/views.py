@@ -68,7 +68,7 @@ class DeleteMeView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = DeleteMeSerializer
 
-    # I overidden this to add a msg to response and to run serializer validators.
+    # I overidden this run serializer validators.
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
@@ -76,7 +76,7 @@ class DeleteMeView(generics.DestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_destroy(instance)
-        return Response({'msg': 'Your account has been deleted.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_object(self):
         """ Retrieve and return the authenticated user """
