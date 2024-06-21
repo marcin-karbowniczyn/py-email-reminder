@@ -29,7 +29,7 @@ def create_remainder(user, **kwargs):
     defaults = {
         'title': 'Test Remainder',
         'description': 'Test description.',
-        'remainder_date': date(today.year + 1, today.month, today.day),
+        'remainder_date': date_to_string(date(today.year + 1, today.month, today.day)),
     }
     defaults.update(**kwargs)
     remainder = Remainder.objects.create(user=user, **defaults)
@@ -119,3 +119,20 @@ class PrivateRecipeAPITests(TestCase):
         for key, value in payload.items():
             self.assertEqual(serializer.data[key], value)
         self.assertEqual(remainder.user, self.user)
+
+    def test_delete_remainder(self):
+        """ Test deleting a remainder """
+        remainder = create_remainder(user=self.user)
+        res = self.client.delete(detail_url(remainder.id))
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Remainder.objects.filter(id=remainder.id).exists())
+
+    def test_deleting_someones_remainder_not_possible(self):
+        """ Test deleting someone's else remainder is not possible """
+        other_user = create_user(email='other_user@example.com')
+        remainder = create_remainder(user=other_user)
+        res = self.client.delete(detail_url(remainder.id))
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Remainder.objects.filter(id=remainder.id).exists())
