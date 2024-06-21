@@ -29,7 +29,8 @@ def create_remainder(user, **kwargs):
     defaults = {
         'title': 'Test Remainder',
         'description': 'Test description.',
-        'remainder_date': date_to_string(date(today.year + 1, today.month, today.day)),
+        'remainder_date': date(today.year + 1, today.month, today.day),
+        'permanent': True
     }
     defaults.update(**kwargs)
     remainder = Remainder.objects.create(user=user, **defaults)
@@ -105,7 +106,7 @@ class PrivateRecipeAPITests(TestCase):
         """ Test creating a remainder works """
         payload = {
             'title': "Agatka's Birthday",
-            'remainder_date': date_to_string(date(self.today.year + 1, 2, 27)),
+            'remainder_date': date(self.today.year + 1, 2, 27),
             'description': "Agatka's birthday yearly remainder.",
             'permanent': True
         }
@@ -114,10 +115,9 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
         remainder = Remainder.objects.get(id=res.data['id'])
-        serializer = RemainderSerializer(remainder)
 
         for key, value in payload.items():
-            self.assertEqual(serializer.data[key], value)
+            self.assertEqual(getattr(remainder, key), value)
         self.assertEqual(remainder.user, self.user)
 
     def test_delete_remainder(self):
@@ -136,3 +136,46 @@ class PrivateRecipeAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Remainder.objects.filter(id=remainder.id).exists())
+
+    def test_partial_update(self):
+        """ Test patching a remainder """
+        original_title = "Agatka's birthday"
+        payload = {'remainder_date': date(self.today.year + 1, 2, 28)}
+        remainder = create_remainder(user=self.user, title=original_title, remainder_date=date(self.today.year + 1, 2, 27))
+        res = self.client.patch(detail_url(remainder.id), payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        remainder.refresh_from_db()
+
+        self.assertEqual(original_title, res.data['title'])
+        self.assertEqual(remainder.remainder_date, payload['remainder_date'])
+        self.assertEqual(remainder.user, self.user)
+
+    def test_full_update(self):
+        """ Test full update of a remainder """
+        remainder = create_remainder(user=self.user)
+        paylaod = {
+            'title': 'Updated Title',
+            'remainder_date': date(self.today.year + 1, 1, 1),
+            'description': 'Updated Description',
+        }
+        res = self.client.put(detail_url(remainder.id), paylaod)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        remainder.refresh_from_db()
+        for key, value in paylaod.items():
+            self.assertEqual(getattr(remainder, key), value)
+        self.assertEqual(remainder.permanent, False)
+        self.assertEqual(remainder.user, self.user)
+
+    def test_cannot_update_user_of_remainder(self):
+        """ Test cannot change the user field of the remainder """
+        new_user = create_user(email='new_user@example.com')
+        remainder = create_remainder(user=self.user)
+
+        self.client.patch(detail_url(remainder.id), {'user': new_user.id})
+        remainder.refresh_from_db()
+
+        # We don't assert status code since it will be 200, but serializer won't let changing user
+        self.assertEqual(remainder.user, self.user)
