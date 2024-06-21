@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from core.models import Remainder
-from ..serializers import RemainderSerializer
+from ..serializers import RemainderSerializer, RemainderDetailSerializer
 
 REMAINDERS_URL = reverse('remainders:remainders-list')
 
@@ -97,7 +97,7 @@ class PrivateRecipeAPITests(TestCase):
         remainder = create_remainder(user=self.user)
         res = self.client.get(detail_url(remainder.id))
 
-        serializer = RemainderSerializer(remainder)
+        serializer = RemainderDetailSerializer(remainder)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)

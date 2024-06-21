@@ -7,5 +7,12 @@ class RemainderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Remainder
-        fields = ['id', 'title', 'description', 'remainder_date', 'permanent']
+        fields = ['id', 'title', 'remainder_date', 'permanent']
         extra_kwargs = {'id': {'read_only': True}}  # Redundant, but I prefered to have this included
+
+
+class RemainderDetailSerializer(RemainderSerializer):
+    """ Serializer for detailed Remainders """
+
+    class Meta(RemainderSerializer.Meta):
+        fields = RemainderSerializer.Meta.fields + ['description']
