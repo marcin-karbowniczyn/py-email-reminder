@@ -17,8 +17,9 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
-      - GMAIL_PASSWORD=iwdxkhqaxrpsnkom
-      - GMAIL_USERNAME=martinoo1989@gmail.com
+      - EMAIL_HOST=${MAILTRAP_HOST}
+      - EMAIL_USERNAME=${MAILTRAP_USERNAME}
+      - EMAIL_PASSWORD=${MAILTRAP_PASSWORD}
     depends_on:
       - db
 
