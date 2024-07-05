@@ -49,7 +49,8 @@ SENT_CHECKS = [
     ('month', 'Month'),
     ('week', 'Week'),
     ('three_days', 'Three Days'),
-    ('one_day', 'One Day')
+    ('one_day', 'One Day'),
+    ('today', 'Today'),
 ]
 
 
