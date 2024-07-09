@@ -26,7 +26,7 @@ class CommandsTest(TestCase):
 
         self.assertTrue(remainder.remainder_date < self.today)
 
-    def test_command_past_creates_remainder_today(self):
+    def test_command_today_creates_remainder_today(self):
         """ Test --today option creates remainder set on today """
         call_command('create_remainder', '--today')
         remainder = Remainder.objects.all()[0]
