@@ -6,5 +6,5 @@ class RemaindersConfig(AppConfig):
     name = 'remainders'
 
     def ready(self):
-        from . import remainders_sender
-        remainders_sender.start()
+        from . import manage_remainders
+        manage_remainders.start()
