@@ -7,6 +7,7 @@ from remainders.emails import generate_remainder_email
 
 
 def send_emails():
+    """ Function for sending remainders and updating checks """
     print('Started sending remainders...')
     # Search for remainders that are 30 days from happening
     today = date.today()
@@ -55,7 +56,15 @@ def send_emails():
     print('Remainders have been sent.')
 
 
+def delete_past_remainders():
+    """ Function for deleting all remainders leftovers that hasn't been deleted for any reason """
+    today = date.today()
+    Remainder.objects.filter(remainder_date__lt=today, permanent=False).delete()
+    print('Non-permanent remainders from the past has been deleted')
+
+
 def start():
     scheduler = BackgroundScheduler(job_defaults={'max_instances': 2})
     scheduler.add_job(send_emails, 'interval', seconds=10)
+    scheduler.add_job(delete_past_remainders, 'interval', days=1)
     scheduler.start()

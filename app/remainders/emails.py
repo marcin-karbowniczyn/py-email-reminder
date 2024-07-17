@@ -1,11 +1,22 @@
 from django.core.mail import EmailMessage
 
 
+def how_many_days_to_remainder_string(days_until_remainder):
+    if days_until_remainder < 1:
+        return 'today'
+    elif days_until_remainder == 1:
+        return 'tomorrow'
+    else:
+        return f"in {days_until_remainder} days"
+
+
 def generate_remainder_email(remainder, days_until_remainder):
-    message_title = f"{remainder.title} happens in {days_until_remainder} days"
+    days_information = how_many_days_to_remainder_string(days_until_remainder)
+    message_title = f"{remainder.title} happens {days_information}"
+
     message_body = f"""
 Hi {remainder.user.name}!
-We wanted to remind you, that {remainder.title} happens in {days_until_remainder} days, on {remainder.remainder_date}.
+We wanted to remind you, that {remainder.title} happens {days_information}, on {remainder.remainder_date}.
 
 Remainder description:
 {remainder.description}
