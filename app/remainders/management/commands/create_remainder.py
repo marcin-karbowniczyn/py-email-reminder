@@ -36,9 +36,11 @@ class Command(BaseCommand):
 
         if options['past']:
             remainder_options['remainder_date'] = today - timedelta(days=1)
+            remainder_options.update({'title': 'Test past remainder'})
 
         if options['today']:
             remainder_options['remainder_date'] = today
+            remainder_options.update({'title': 'Test today remainder'})
 
         Remainder.objects.create(**remainder_options)
         self.stdout.write(self.style.SUCCESS('Remainder has been created.'))
