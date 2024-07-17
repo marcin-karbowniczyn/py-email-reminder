@@ -6,5 +6,5 @@ class RemaindersConfig(AppConfig):
     name = 'remainders'
 
     def ready(self):
-        from . import email_sender
-        email_sender.start()
+        from . import remainders_sender
+        remainders_sender.start()
