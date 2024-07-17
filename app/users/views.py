@@ -43,6 +43,8 @@ class ChangeUserPasswordView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ChangePasswordSerializer
 
+    # I had to override it to hide passwords from the reponse.
+    # Default is 'return Response(serializer.data)'
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
