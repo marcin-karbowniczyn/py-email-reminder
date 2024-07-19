@@ -12,11 +12,18 @@ from users.serializers import (
     DeleteMeSerializer,
     AuthTokenSerializer
 )
+from users.emails import welcome_email
 
 
 class RegisterNewUserView(generics.CreateAPIView):
     """ Create a new user in the system """
     serializer_class = RegisterNewUserSerializer
+
+    def perform_create(self, serializer):
+        """ Create a new user and send a welcoming e-mail """
+        user = serializer.save()
+        if user:
+            welcome_email(user).send()
 
 
 class CreateAuthTokenView(ObtainAuthToken):
