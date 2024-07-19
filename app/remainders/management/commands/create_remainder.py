@@ -19,8 +19,6 @@ class Command(BaseCommand):
         """ Entrypoint for command """
         if not options['past'] and not options['today']:
             raise CommandError('You need to specify either --past or --today option for this command.')
-            # self.stdout.write('You need to specify either --past or --today option for this command.')
-            # return
 
         today = date.today()
         user, created = User.objects.get_or_create(email='command_test@example.com')
