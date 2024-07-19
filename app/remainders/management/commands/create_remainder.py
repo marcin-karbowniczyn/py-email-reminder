@@ -21,7 +21,7 @@ class Command(BaseCommand):
             raise CommandError('You need to specify either --past or --today option for this command.')
 
         today = date.today()
-        user, created = User.objects.get_or_create(email='command_test@example.com')
+        user, created = User.objects.get_or_create(email='command_test@example.com', name='Test User')
 
         remainder_options = {
             'user': user,
