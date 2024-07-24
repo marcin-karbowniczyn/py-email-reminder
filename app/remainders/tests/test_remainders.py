@@ -1,5 +1,5 @@
 # """ Test for the remainders API """
-from datetime import date
+from datetime import date, timedelta
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -179,3 +179,69 @@ class PrivateRecipeAPITests(TestCase):
 
         # We don't assert status code since it will be 200, but serializer won't let changing user
         self.assertEqual(remainder.user, self.user)
+
+    # def test_create_remainder_with_new_tags(self):
+    #     """ Test creating a remainder with new tags """
+    #     payload = {
+    #         'title': "Agatka's Birthday",
+    #         'remainder_date': date(self.today.year + 1, 1, 1),
+    #         'tags': [{'name': 'Birthday'}, {'name': 'Important'}]
+    #     }
+    #
+    #     res = self.client.post(REMAINDERS_URL, payload, format='json')
+    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+    #
+    #     remainders = Remainder.objects.filter(user=self.user)
+    #     self.assertEqual(len(remainders), 1)
+    #
+    #     remainder = remainders[0]
+    #     self.assertEqual(remainder.tags.count(), 2)
+    #
+    #     for tag in payload['tags']:
+    #         exists = Tag.objects.filter(name=tag['name'], user=self.user).exists()
+    #         self.assertTrue(exists)
+    #
+    # def test_create_remainder_with_existing_tags(self):
+    #     """ Test creating a remainder with existing tags """
+    #     # Sprawdzić i usunąć, czy ten tag nie zostanie zwrócony w remainder.tags.all()
+    #     other_user = create_user(email='some_other@example.com')
+    #     Tag.objects.create(name='Some Tag', user=other_user)
+    #
+    #     tag = Tag.objects.create(name='Birthday', user=self.user)
+    #     payload = {
+    #         'title': "Agatka's Birthday",
+    #         'remainder_date': date(self.today.year + 1, 1, 1),
+    #         'tags': [{'name': 'Birthday'}, {'name': 'Important'}]
+    #     }
+    #
+    #     res = self.client.post(REMAINDERS_URL, payload, format='json')
+    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+    #
+    #     remainders = Remainder.objects.filter(user=self.user)
+    #     self.assertEqual(len(remainders), 1)
+    #
+    #     remainder = remainders[0]
+    #     self.assertEqual(len(remainder.tags), 2)  # Sprawdzić czy działa, czy musi być count()
+    #     self.assertIn(tag, remainders.tags.all())
+    #
+    #     tags = Tag.objects.filter(user=self.user)
+    #     self.assertEqual(len(tags), 2)
+    #
+    #     for tag in payload['tags']:
+    #         exists = remainder.tags.filter(name=tag['name']).exists()
+    #         self.assertTrue(exists)
+    #
+    # def test_create_tag_on_update(self):
+    #     """ Test tag is created when remainder is updated """
+    #     remainder = create_remainder(user=self.user)
+    #     payload = {
+    #         'tags': [{'name': 'Birthday'}]
+    #     }
+    #
+    #     self.assertEqual(Tag.objects.count(), 0)
+    #
+    #     res = self.client.patch(detail_url(remainder.id), payload, format='json')
+    #     self.assertEqual(res.status_code, status.HTTP_200_OK)
+    #
+    #     new_tag = Tag.objects.get(user=self.user, name='Birthday')
+    #     self.assertIn(new_tag, remainder.tags.all())
