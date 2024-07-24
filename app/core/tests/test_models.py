@@ -3,7 +3,7 @@ from datetime import date
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-from ..models import Remainder
+from ..models import Reminder
 
 
 class ModelTests(TestCase):
@@ -40,17 +40,17 @@ class ModelTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def test_create_remainder(self):
-        """ Test creating a remainder """
+    def test_create_reminder(self):
+        """ Test creating a reminder """
         user = get_user_model().objects.create_user(email='test@example.com', password='Test1234')
         current_year = date.today().year
-        remainder = Remainder.objects.create(
-            title='Test Remainder',
+        reminder = Reminder.objects.create(
+            title='Test Reminder',
             description='Test Description',
-            remainder_date=date(current_year + 1, 1, 1),
+            reminder_date=date(current_year + 1, 1, 1),
             permanent='True',
             user=user
         )
 
-        self.assertEqual(str(remainder), remainder.title)
-        self.assertEqual(remainder.sent_check, 'None')
+        self.assertEqual(str(reminder), reminder.title)
+        self.assertEqual(reminder.sent_check, 'None')

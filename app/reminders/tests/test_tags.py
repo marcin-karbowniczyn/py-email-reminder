@@ -8,10 +8,10 @@
 # from rest_framework import status
 # from rest_framework.test import APIClient
 #
-# from core.models import Remainder, Tag
-# from remainders.serializers import TagSerializer
+# from core.models import Reminder, Tag
+# from reminders.serializers import TagSerializer
 #
-# TAGS_URL = reverse('remainders:tag-list')
+# TAGS_URL = reverse('reminders:tag-list')
 #
 #
 # def detail_url(tag_id):
@@ -99,12 +99,12 @@
 #
 #         today = date.today()
 #
-#         remainder = Remainder.objects.create(
+#         reminder = Reminder.objects.create(
 #             title="Mom's birthday",
 #             user=self.user,
-#             remainder_date=date(today.year + 1, 1, 1)
+#             reminder_date=date(today.year + 1, 1, 1)
 #         )
-#         remainder.tags.add(tag1)
+#         reminder.tags.add(tag1)
 #
 #         res = self.client.get(TAGS_URL, {'assigned_only': 1})
 #
@@ -114,27 +114,27 @@
 #         self.assertIn(res.data, serialized_tag1)
 #         self.assertNotIn(res.data, serialized_tag2)
 #
-#     # I want to make sure, that a tag that is assigned to more than one remainder is not going to be returned multiple times
+#     # I want to make sure, that a tag that is assigned to more than one reminder is not going to be returned multiple times
 #     def test_filtered_tags_unique(self):
 #         """ Test filtered tags return a unique list """
 #         tag = Tag.objects.create(name='Birthday', user=self.user)
 #         Tag.objects.create(name='Anniversary', user=self.user)
 #
 #         today = date.today()
-#         remainder1 = Remainder.objects.create(
+#         reminder1 = Reminder.objects.create(
 #             title="Mom's birthday",
 #             user=self.user,
-#             remainder_date=date(today.year + 1, 1, 1)
+#             reminder_date=date(today.year + 1, 1, 1)
 #         )
 #
-#         remainder2 = Remainder.objects.create(
+#         reminder2 = Reminder.objects.create(
 #             title="Dad's birthday",
 #             user=self.user,
-#             remainder_date=date(today.year + 2, 2, 2)
+#             reminder_date=date(today.year + 2, 2, 2)
 #         )
 #
-#         remainder1.tags.add(tag)
-#         remainder2.tags.add(tag)
+#         reminder1.tags.add(tag)
+#         reminder2.tags.add(tag)
 #
 #         res = self.client.get(TAGS_URL, {'assigned_only': 1})
 #         self.assertEqual(len(res.data), 1)
