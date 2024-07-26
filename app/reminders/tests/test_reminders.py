@@ -1,5 +1,5 @@
 # """ Test for the reminders API """
-from datetime import date, timedelta
+from datetime import date
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -8,7 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from core.models import Reminder
+from core.models import Reminder, Tag
 from ..serializers import ReminderSerializer, ReminderDetailSerializer
 
 REMINDERS_URL = reverse('reminders:reminders-list')
@@ -180,68 +180,120 @@ class PrivateRecipeAPITests(TestCase):
         # We don't assert status code since it will be 200, but serializer won't let changing user
         self.assertEqual(reminder.user, self.user)
 
-    # def test_create_reminder_with_new_tags(self):
-    #     """ Test creating a reminder with new tags """
-    #     payload = {
-    #         'title': "Agatka's Birthday",
-    #         'reminder_date': date(self.today.year + 1, 1, 1),
-    #         'tags': [{'name': 'Birthday'}, {'name': 'Important'}]
-    #     }
-    #
-    #     res = self.client.post(REMINDERS_URL, payload, format='json')
-    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-    #
-    #     reminders = Reminder.objects.filter(user=self.user)
-    #     self.assertEqual(len(reminders), 1)
-    #
-    #     reminder = reminders[0]
-    #     self.assertEqual(reminder.tags.count(), 2)
-    #
-    #     for tag in payload['tags']:
-    #         exists = Tag.objects.filter(name=tag['name'], user=self.user).exists()
-    #         self.assertTrue(exists)
-    #
-    # def test_create_reminder_with_existing_tags(self):
-    #     """ Test creating a reminder with existing tags """
-    #     # Sprawdzić i usunąć, czy ten tag nie zostanie zwrócony w reminder.tags.all()
-    #     other_user = create_user(email='some_other@example.com')
-    #     Tag.objects.create(name='Some Tag', user=other_user)
-    #
-    #     tag = Tag.objects.create(name='Birthday', user=self.user)
-    #     payload = {
-    #         'title': "Agatka's Birthday",
-    #         'reminder_date': date(self.today.year + 1, 1, 1),
-    #         'tags': [{'name': 'Birthday'}, {'name': 'Important'}]
-    #     }
-    #
-    #     res = self.client.post(REMINDERS_URL, payload, format='json')
-    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-    #
-    #     reminders = Reminder.objects.filter(user=self.user)
-    #     self.assertEqual(len(reminders), 1)
-    #
-    #     reminder = reminders[0]
-    #     self.assertEqual(len(reminder.tags), 2)  # Sprawdzić czy działa, czy musi być count()
-    #     self.assertIn(tag, reminders.tags.all())
-    #
-    #     tags = Tag.objects.filter(user=self.user)
-    #     self.assertEqual(len(tags), 2)
-    #
-    #     for tag in payload['tags']:
-    #         exists = reminder.tags.filter(name=tag['name']).exists()
-    #         self.assertTrue(exists)
-    #
-    # def test_create_tag_on_update(self):
-    #     """ Test tag is created when reminder is updated """
-    #     reminder = create_reminder(user=self.user)
-    #     payload = {
-    #         'tags': [{'name': 'Birthday'}]
-    #     }
-    #
-    #     self.assertEqual(Tag.objects.count(), 0)
-    #
-    #     res = self.client.patch(detail_url(reminder.id), payload, format='json')
-    #     self.assertEqual(res.status_code, status.HTTP_200_OK)
-    #
-    #     new_tag = Tag.objects.get(user=self.user, name='Birthday')
-    #     self.assertIn(new_tag, reminder.tags.all())
+    def test_create_reminder_with_new_tags(self):
+        """ Test creating a reminder with new tags """
+        payload = {
+            'title': "Agatka's Birthday",
+            'reminder_date': date(self.today.year + 1, 1, 1),
+            'tags': [{'name': 'Birthday'}, {'name': 'Important'}]
+        }
+
+        res = self.client.post(REMINDERS_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        reminders = Reminder.objects.filter(user=self.user)
+        self.assertEqual(len(reminders), 1)
+
+        reminder = reminders[0]
+        self.assertEqual(reminder.tags.count(), 2)
+
+        for tag in payload['tags']:
+            exists = Tag.objects.filter(name=tag['name'], user=self.user).exists()
+            self.assertTrue(exists)
+
+    def test_create_reminder_with_existing_tags(self):
+        """ Test creating a reminder with existing tags """
+        # Sprawdzić i usunąć, czy ten tag nie zostanie zwrócony w reminder.tags.all()
+        other_user = create_user(email='some_other@example.com')
+        Tag.objects.create(name='Some Tag', user=other_user)
+
+        tag = Tag.objects.create(name='Birthday', user=self.user)
+        payload = {
+            'title': "Agatka's Birthday",
+            'reminder_date': date(self.today.year + 1, 1, 1),
+            'tags': [{'name': 'Birthday'}, {'name': 'Important'}]
+        }
+
+        res = self.client.post(REMINDERS_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        reminders = Reminder.objects.filter(user=self.user)
+        self.assertEqual(len(reminders), 1)
+
+        reminder = reminders[0]
+        self.assertEqual(reminder.tags.count(), 2)
+        self.assertIn(tag, reminder.tags.all())
+
+        tags = Tag.objects.filter(user=self.user)
+        self.assertEqual(len(tags), 2)
+
+        for tag in payload['tags']:
+            exists = reminder.tags.filter(name=tag['name']).exists()
+            self.assertTrue(exists)
+
+    def test_create_tag_on_update(self):
+        """ Test tag is created when reminder is updated """
+        reminder = create_reminder(user=self.user)
+        payload = {
+            'tags': [{'name': 'Birthday'}]
+        }
+
+        self.assertEqual(Tag.objects.count(), 0)
+
+        res = self.client.patch(detail_url(reminder.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        new_tag = Tag.objects.get(user=self.user, name='Birthday')
+        self.assertIn(new_tag, reminder.tags.all())
+
+    def test_update_reminder_assign_tag(self):
+        """ Test existing tag is assigned when reminder us updated """
+        tag_birthday = Tag.objects.create(name='Birthday', user=self.user)
+        reminder = create_reminder(user=self.user)
+        reminder.tags.add(tag_birthday)
+
+        tag_important = Tag.objects.create(name='Important', user=self.user)
+        payload = {
+            'tags': [{'name': 'Important'}]
+        }
+
+        res = self.client.patch(detail_url(reminder.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        reminder_tags = reminder.tags.all()
+        self.assertIn(tag_important, reminder_tags)
+        self.assertNotIn(tag_birthday, reminder_tags)
+        self.assertEqual(Tag.objects.count(), 2)
+
+    def test_clear_reminder_tags(self):
+        """ Test clearing reminder's tags """
+        tag = Tag.objects.create(name='Birthday', user=self.user)
+        reminder = create_reminder(user=self.user)
+        reminder.tags.add(tag)
+
+        payload = {
+            'tags': []
+        }
+
+        res = self.client.patch(detail_url(reminder.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(reminder.tags.count(), 0)
+
+    def test_tags_saved_uppercase(self):
+        """ Test saving tags is not case and whitespace sensitive """
+        tag = Tag.objects.create(user=self.user, name='Very Important')
+        payload = {
+            'title': 'Test Reminder',
+            'reminder_date': date(self.today.year + 1, 1, 1),
+            'tags': [{'name': 'Very Important'}, {'name': 'very important'}, {'name': 'very  important'}, {'name': ' very Important  '}]
+        }
+
+        res = self.client.post(REMINDERS_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        reminder = Reminder.objects.get(user=self.user, title=payload['title'])
+        self.assertEqual(Tag.objects.count(), 1)
+        self.assertEqual(reminder.tags.count(), 1)
+        self.assertEqual(tag.name, res.data['tags'][0]['name'])
+
+# Pamiętać o teście na filtrowanie !!!!!!!!!!!!!!!!!!!!

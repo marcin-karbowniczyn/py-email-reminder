@@ -65,7 +65,7 @@ class Reminder(models.Model):
     sent_check = models.CharField(max_length=255, choices=SENT_CHECKS, default='None')
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    tags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag', blank=True)
 
     def __str__(self):
         return self.title

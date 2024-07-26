@@ -7,7 +7,8 @@ from reminders import views
 app_name = 'reminders'
 
 router = DefaultRouter()
-router.register('', views.ReminderViewSet, basename='reminders')
+router.register('reminders', views.ReminderViewSet, basename='reminders')
+router.register('tags', views.TagViewSet, basename='tags')
 
 urlpatterns = [
     path('', include(router.urls))
