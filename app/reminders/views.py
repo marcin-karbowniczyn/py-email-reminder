@@ -13,9 +13,20 @@ class ReminderViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def _params_to_ints(self, query_string):
+        """ Convert a list of strings to integers """
+        return [int(str_id) for str_id in query_string.split(',')]
+
     def get_queryset(self):
         """ Retrieve only reminders of authenticated user """
-        return self.queryset.filter(user=self.request.user)
+        tags = self.request.query_params.get('tags')
+        queryset = self.queryset
+
+        if tags:
+            tag_ids = self._params_to_ints(tags)
+            queryset = queryset.filter(tags__id__in=tag_ids)
+
+        return queryset.filter(user=self.request.user).order_by('-reminder_date').distinct()
 
     def get_serializer_class(self):
         """ Return the serializer class based on request action """
@@ -37,4 +48,9 @@ class TagViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.DestroyM
 
     def get_queryset(self):
         """ Retrieve only tags of authenticated user """
-        return self.queryset.filter(user=self.request.user)
+        queryset = self.queryset
+        assigned_only = bool(int(self.request.query_params.get('assigned_only', 0)))
+        if assigned_only:
+            queryset = queryset.filter(reminder__isnull=False)
+
+        return queryset.filter(user=self.request.user).order_by('-name').distinct()
