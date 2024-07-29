@@ -92,3 +92,48 @@ class PrivateTagsAPITests(TestCase):
 
         tags = Tag.objects.filter(id=tag.id).exists()
         self.assertFalse(tags)
+
+    def test_filter_tags_assigned_to_recipes(self):
+        """ Test listing tags by those assigned to recipes """
+        tag1 = Tag.objects.create(name='Birthday', user=self.user)
+        tag2 = Tag.objects.create(name='Anniversary', user=self.user)
+
+        today = date.today()
+        reminder = Reminder.objects.create(
+            title='Test Reminder',
+            reminder_date=date(today.year + 1, 1, 1),
+            user=self.user
+        )
+        reminder.tags.add(tag1)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        serialized_tag1 = TagSerializer(tag1)
+        serialized_tag2 = TagSerializer(tag2)
+        self.assertIn(serialized_tag1.data, res.data)
+        self.assertNotIn(serialized_tag2.data, res.data)
+
+    def test_filtered_tags_unique(self):
+        """ Test filtered tags return a unique list """
+        tag1 = Tag.objects.create(name='Birthday', user=self.user)
+        Tag.objects.create(name='Anniversary', user=self.user)
+
+        today = date.today()
+        reminder1 = Reminder.objects.create(
+            title="Dad's Birthday",
+            reminder_date=date(today.year + 1, 1, 1),
+            user=self.user
+        )
+
+        reminder2 = Reminder.objects.create(
+            title="Mom's Birthday",
+            reminder_date=date(today.year + 1, 2, 2),
+            user=self.user
+        )
+
+        reminder1.tags.add(tag1)
+        reminder2.tags.add(tag1)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+        self.assertEqual(len(res.data), 1)

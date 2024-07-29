@@ -296,4 +296,25 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(reminder.tags.count(), 1)
         self.assertEqual(tag.name, res.data['tags'][0]['name'])
 
-# Pamiętać o teście na filtrowanie !!!!!!!!!!!!!!!!!!!!
+    def test_filter_by_tags(self):
+        """ Test filtering reminders by tags """
+        reminder1 = create_reminder(user=self.user, title='Birthday')
+        tag1 = Tag.objects.create(user=self.user, name='Family')
+        reminder1.tags.add(tag1)
+
+        reminder2 = create_reminder(user=self.user, title='Meeting')
+        tag2 = Tag.objects.create(user=self.user, name='Work')
+        reminder2.tags.add(tag2)
+
+        reminder3 = create_reminder(user=self.user, title='Some Other Reminder')
+
+        res = self.client.get(REMINDERS_URL, {'tags': f'{tag1.id},{tag2.id}'})
+
+        serializer1 = ReminderSerializer(reminder1)
+        serializer2 = ReminderSerializer(reminder2)
+        serializer3 = ReminderSerializer(reminder3)
+
+        self.assertEqual(len(res.data), 2)
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
