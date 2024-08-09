@@ -32,7 +32,7 @@ class ReminderSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags', [])
 
         # 2. Create a new reminder with the rest of data
-        reminder = Reminder.objects.create(**validated_data)  # Sprawdzić self.Meta.objects
+        reminder = self.Meta.model.objects.create(**validated_data)
 
         # 3.Get authenticated user from the request and liip through tags from validated data
         auth_user = self.context['request'].user
