@@ -65,6 +65,6 @@ def delete_past_reminders():
 
 def start():
     scheduler = BackgroundScheduler(job_defaults={'max_instances': 2})
-    # scheduler.add_job(send_emails, 'interval', seconds=6)
-    # scheduler.add_job(delete_past_reminders, 'interval', hours=5)
+    scheduler.add_job(send_emails, 'interval', hours=8)
+    scheduler.add_job(delete_past_reminders, 'interval', hours=12)
     scheduler.start()
