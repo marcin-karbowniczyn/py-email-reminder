@@ -24,6 +24,13 @@ class UserAdmin(BaseUserAdmin):
     readonly_fields = ['last_login']
 
 
+class ReminderAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'reminder_date')
+    search_fields = ('title', 'user', 'reminder_date')
+    list_filter = ('user',)
+    ordering = ('user',)
+
+
 admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Reminder)
+admin.site.register(models.Reminder, ReminderAdmin)
 admin.site.register(models.Tag)
