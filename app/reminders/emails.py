@@ -25,4 +25,4 @@ We wanted to remind you, that {reminder.title} happens {days_information}, on {r
     if reminder.permanent is False:
         message_body = message_body + '\n' + 'Important Note: This reminder is not permanent and will be deleted after the date of the reminder.'
 
-    return EmailMessage(message_title, message_body, to=[reminder.user.email])
+    return EmailMessage(message_title, message_body, from_email='Emailnder', to=[reminder.user.email])
