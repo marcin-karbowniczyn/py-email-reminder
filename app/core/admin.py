@@ -26,7 +26,7 @@ class UserAdmin(BaseUserAdmin):
 
 class ReminderAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'reminder_date')
-    search_fields = ('title', 'user', 'reminder_date')
+    search_fields = ('title', 'user__name', 'reminder_date')
     list_filter = ('user',)
     ordering = ('user',)
 
