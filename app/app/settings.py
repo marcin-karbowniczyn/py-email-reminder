@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'reminders',
     'core',
     'users',
+    'web'
 ]
 
 MIDDLEWARE = [
